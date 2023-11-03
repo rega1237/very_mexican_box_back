@@ -47,3 +47,4 @@ group :development do
 end
 
 gem 'stripe'
+gem 'devise_token_auth'
