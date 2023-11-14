@@ -20,6 +20,20 @@ class User < ActiveRecord::Base
     self.stripe_id = customer.id
   end
 
+  def create_new_source(card_token)
+    Stripe::Customer.create_source(
+      self.stripe_id,
+      {source: card_token},
+    )
+  end
+
+  def update_default_source(card_id)
+    Stripe::Customer.update(
+      self.stripe_id,
+      {default_source: card_id},
+    )
+  end
+
   def retrieve_stripe_reference
     Stripe::Customer.retrieve(stripe_id)
   end
