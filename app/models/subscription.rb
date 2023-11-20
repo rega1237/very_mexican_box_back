@@ -3,82 +3,78 @@ class Subscription < ApplicationRecord
 
   belongs_to :plan
   belongs_to :user
-  
+
   validates :stripe_id, presence: true, uniqueness: true
-  
+
   before_validation :create_stripe_reference, on: :create
-  
+
   def create_stripe_reference
     customer = user.retrieve_stripe_reference
-    cardExist = card_exist?(card_token, customer)
-    oldCard = customer.default_source
+    card_exist = card_exist?(card_token, customer)
+    old_card = customer.default_source
 
-    if !cardExist
+    if !card_exist
       new_card = user.create_new_source(card_token)
       user.update_default_source(new_card.id)
-    elsif cardExist && change_default
-      updateExistingCard(card_token, customer)
+    elsif card_exist && change_default
+      update_existing_card(card_token, customer)
     end
 
     response = Stripe::Subscription.create({
-      customer: customer.id,
-      items: [
-        { price: plan.stripe_id },
-      ]
-    })
+                                             customer: customer.id,
+                                             items: [
+                                               { price: plan.stripe_id }
+                                             ]
+                                           })
     self.stripe_id = response.id
 
-    if !change_default
-      user.update_default_source(oldCard)
-    end
+    return if change_default
+
+    user.update_default_source(old_card)
   end
-  
+
   def cancel_stripe_subscription(comment)
     Stripe::Subscription.cancel(
-      self.stripe_id,
+      stripe_id,
       cancellation_details: {
-        comment: comment
+        comment:
       }
     )
   end
-  
+
   def subscription_inactive?
     !active
   end
-  
+
   private
-  
+
   def card_exist?(card_token, customer)
-    if customer.default_source == nil
-      return false
-    end
+    return false if customer.default_source.nil?
 
     all_cards = Stripe::Customer.list_sources(
       customer.id,
-      {object: 'card'},
+      { object: 'card' }
     )
 
     card_token_fingerprint = Stripe::Token.retrieve(card_token).card.fingerprint
 
     all_cards.each do |card_customer|
-      if card_customer.fingerprint == card_token_fingerprint
-        return true
-      end
+      return true if card_customer.fingerprint == card_token_fingerprint
     end
 
-    return false
+    false
   end
 
-  def updateExistingCard(card_token, customer)
-    existCard = Stripe::Token.retrieve(card_token).card.fingerprint
+  def update_existing_card(card_token, customer)
+    exist_card = Stripe::Token.retrieve(card_token).card.fingerprint
 
     all_cards = Stripe::Customer.list_sources(
       customer.id,
-      {object: 'card'},
+      { object: 'card' }
     )
 
-    matchingCard = all_cards.select { |card_customer| card_customer.fingerprint == existCard}
+    matching_card = all_cards.select { |card_customer| card_customer.fingerprint == exist_card }
 
-    user.update_default_source(matchingCard[0].id)
+    user.update_default_source(matching_card[0].id)
   end
 end
