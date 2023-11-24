@@ -1,6 +1,9 @@
 class User < ActiveRecord::Base
   before_validation :create_stripe_reference, on: :create
 
+  has_many :subscriptions
+  has_many :cards
+
   extend Devise::Models
   # Include default devise modules. Others available are:
   # :confirmable, :lockable, :timeoutable, :trackable and :omniauthable
@@ -30,6 +33,9 @@ class User < ActiveRecord::Base
       stripe_id,
       { default_source: card_id }
     )
+
+    cards.update_all(default: false)
+    cards.where(stripe_id: card_id)[0].update(default: true)
   end
 
   def retrieve_stripe_reference
