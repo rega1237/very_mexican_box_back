@@ -6,7 +6,8 @@ class SubscriptionsController < ApplicationController
   end
 
   def create
-    @subscription = Subscription.new(subscription_params.merge(card_token: params[:data][:card_token], change_default: params[:data][:change_default]))
+    @subscription = Subscription.new(subscription_params.merge(card_token: params[:data][:card_token],
+                                                               change_default: params[:data][:change_default]))
     if @subscription.save
       render json: @subscription, status: :created
     else

@@ -4,22 +4,22 @@ class Card < ApplicationRecord
   belongs_to :user
 
   validates :stripe_id, presence: true, uniqueness: true
-  validates :last_four, presence: true, uniqueness: true 
+  validates :last_four, presence: true, uniqueness: true
 
   before_validation :create_stripe_card_reference, on: :create
   before_destroy :delete_stripe_card_reference
   before_update :update_stripe_card_reference
-
+  # rubocop:disable Metrics/PerceivedComplexity
   def create_stripe_card_reference
     oldcard = user.cards.where(default: true)
 
     if from_subscription
-        response = user.create_new_source(card_token)
-  
-        set_values(response, oldcard)
-        
-        update_default_source(response.id)
-        update_default_db if default
+      response = user.create_new_source(card_token)
+
+      set_values(response, oldcard)
+
+      update_default_source(response.id)
+      update_default_db if default
     elsif !card_exist?
       response = user.create_new_source(card_token)
 
@@ -33,6 +33,7 @@ class Card < ApplicationRecord
       end
     end
   end
+  # rubocop:enable Metrics/PerceivedComplexity
 
   private
 
@@ -43,11 +44,11 @@ class Card < ApplicationRecord
     self.exp_month = response.exp_month
     self.exp_year = response.exp_year
     self.name_on_card = response.name
-    if oldcard.empty?
-      self.default = true
-    else
-      self.default = default
-    end
+    self.default = if oldcard.empty?
+                     true
+                   else
+                     default
+                   end
   end
 
   def card_exist?
@@ -57,7 +58,7 @@ class Card < ApplicationRecord
 
     card_token_last_four = Stripe::Token.retrieve(card_token).card.last4
 
-    all_cards.filter { |card| card.last_four == card_token_last_four }.empty? ? false : true
+    all_cards.any? { |card| card.last_four == card_token_last_four }
   end
 
   def update_default_source(card_id)
@@ -76,10 +77,10 @@ class Card < ApplicationRecord
   end
 
   def update_stripe_card_reference
-    if default
-      update_default_source(stripe_id)
-      update_default_db
-    end
+    return unless default
+
+    update_default_source(stripe_id)
+    update_default_db
   end
 
   def delete_stripe_card_reference

@@ -1,5 +1,5 @@
 class CardsController < ApplicationController
-  before_action :set_card, only: [:show, :update, :destroy]
+  before_action :set_card, only: %i[show update destroy]
   before_action :set_user_cards, only: [:index]
 
   def index
@@ -25,7 +25,7 @@ class CardsController < ApplicationController
       render json: { message: 'Card was not deleted.' }, status: :unprocessable_entity
     end
   end
-   
+
   def create
     @card = Card.new(card_params.merge(card_token: params[:data][:card_token]))
     if @card.save
@@ -44,7 +44,7 @@ class CardsController < ApplicationController
   def set_user_cards
     @cards = Card.where(user_id: params[:user_id])
   end
-  
+
   def card_params
     params.require(:data).permit(:user_id, :card_token, :default)
   end
