@@ -10,9 +10,24 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_11_14_130342) do
+ActiveRecord::Schema[7.0].define(version: 2023_11_23_122342) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "cards", force: :cascade do |t|
+    t.string "stripe_id"
+    t.string "brand"
+    t.integer "exp_month"
+    t.integer "exp_year"
+    t.string "last_four"
+    t.string "name_on_card"
+    t.boolean "default", default: false
+    t.bigint "user_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.boolean "from_subscription", default: false
+    t.index ["user_id"], name: "index_cards_on_user_id"
+  end
 
   create_table "plans", force: :cascade do |t|
     t.string "name"
@@ -28,7 +43,6 @@ ActiveRecord::Schema[7.0].define(version: 2023_11_14_130342) do
     t.string "stripe_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.boolean "change_default", default: false
     t.index ["plan_id"], name: "index_subscriptions_on_plan_id"
     t.index ["user_id"], name: "index_subscriptions_on_user_id"
   end
@@ -58,6 +72,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_11_14_130342) do
     t.index ["uid", "provider"], name: "index_users_on_uid_and_provider", unique: true
   end
 
+  add_foreign_key "cards", "users"
   add_foreign_key "subscriptions", "plans"
   add_foreign_key "subscriptions", "users"
 end
