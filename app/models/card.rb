@@ -7,13 +7,13 @@ class Card < ApplicationRecord
   validates :last_four, presence: true, uniqueness: true 
 
   before_validation :create_stripe_card_reference, on: :create
+  before_destroy :delete_stripe_card_reference
+  before_update :update_stripe_card_reference
 
   def create_stripe_card_reference
     oldcard = user.cards.where(default: true)
 
     if from_subscription
-        puts "from subscription"
-        puts "---------------------------------"
         response = user.create_new_source(card_token)
   
         set_values(response, oldcard)
@@ -58,7 +58,6 @@ class Card < ApplicationRecord
     card_token_last_four = Stripe::Token.retrieve(card_token).card.last4
 
     all_cards.filter { |card| card.last_four == card_token_last_four }.empty? ? false : true
-    puts "card exist"
   end
 
   def update_default_source(card_id)
@@ -69,12 +68,24 @@ class Card < ApplicationRecord
   end
 
   def update_default_db
-    puts "update default db"
-    puts "---------------------------------"
     all_cards = user.cards
 
     all_cards.update_all(default: false)
 
     self.default = true
+  end
+
+  def update_stripe_card_reference
+    if default
+      update_default_source(stripe_id)
+      update_default_db
+    end
+  end
+
+  def delete_stripe_card_reference
+    Stripe::Customer.delete_source(
+      user.stripe_id,
+      stripe_id
+    )
   end
 end
