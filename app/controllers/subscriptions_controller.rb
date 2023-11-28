@@ -9,6 +9,8 @@ class SubscriptionsController < ApplicationController
     @subscription = Subscription.new(subscription_params.merge(card_token: params[:data][:card_token],
                                                                change_default: params[:data][:change_default]))
     if @subscription.save
+      SubcriptionCustomerMailer.with(subscription: @subscription).new_subscription_to_customer.deliver_later
+      SubcriptionCustomerMailer.with(subscription: @subscription).new_subscription_to_admin.deliver_later
       render json: @subscription, status: :created
     else
       render json: @subscription.errors, status: :unprocessable_entity
@@ -18,6 +20,8 @@ class SubscriptionsController < ApplicationController
   def update
     if @subscription.update(subscription_params)
       @subscription.cancel_stripe_subscription(params[:data][:comment]) if @subscription.subscription_inactive?
+      SubcriptionCustomerMailer.with(subscription: @subscription).cancel_stripe_subscription_user.deliver_later
+      SubcriptionCustomerMailer.with(subscription: @subscription).cancel_stripe_subscription_admin.deliver_later
       render json: @subscription
     else
       render json: @subscription.errors, status: :unprocessable_entity
