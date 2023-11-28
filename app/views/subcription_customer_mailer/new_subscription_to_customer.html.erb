@@ -1,0 +1,13 @@
+<div class="body_email">
+  <div class="logo_container">
+    <%= image_tag('https://i.ibb.co/rMv3HW6/very-mexican-logo.png', alt:'very-mexican-logo', class: 'logo') %>
+  </div>
+  <p>TU SUBSCRIPCIÓN HA SIDO PROCESADA!</p>
+  <p>
+    Order details<br>
+    --------------------------
+  </p>
+  <p>Name: <%= @subscription.plan.name %></p>
+  <p>Email: <%= @customer.email %></p>
+  <p>Email: <%= @customer.name %></p>
+</div>
