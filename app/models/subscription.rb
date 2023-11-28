@@ -44,6 +44,10 @@ class Subscription < ApplicationRecord
     !active
   end
 
+  def retrieve_stripe_info
+    Stripe::Subscription.retrieve(stripe_id)
+  end
+
   private
 
   def card_exist?
