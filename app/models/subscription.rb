@@ -5,6 +5,14 @@ class Subscription < ApplicationRecord
   belongs_to :user
 
   validates :stripe_id, presence: true, uniqueness: true
+  validates :plan_id, presence: true
+  validates :user_id, presence: true
+  validates :card_token, presence: true, on: :create
+  validates :shipping_city, presence: true, on: :create
+  validates :shipping_line1, presence: true, on: :create
+  validates :shipping_postal_code, presence: true, on: :create
+  validates :shipping_state, presence: true, on: :create
+  validates :shipping_name, presence: true, on: :create
 
   before_validation :create_stripe_reference, on: :create
 
