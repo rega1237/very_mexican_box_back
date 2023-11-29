@@ -36,6 +36,8 @@ class SubscriptionsController < ApplicationController
   end
 
   def subscription_params
-    params.require(:data).permit(:user_id, :plan_id, :active, :card_token, :change_default)
+    params.require(:data).permit(:user_id, :plan_id, :active, :card_token, :change_default, :shipping_city,
+                                 :shipping_line1, :shipping_line2, :shipping_postal_code, :shipping_state,
+                                 :shipping_name)
   end
 end
