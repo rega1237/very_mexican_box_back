@@ -1,5 +1,6 @@
 class SubscriptionsController < ApplicationController
   before_action :set_subscription, except: %i[create]
+  before_action :authenticate_user!
 
   def show
     render json: @subscription
