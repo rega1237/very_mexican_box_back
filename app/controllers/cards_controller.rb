@@ -1,4 +1,5 @@
 class CardsController < ApplicationController
+  before_action :authenticate_user!
   before_action :set_card, only: %i[show update destroy]
   before_action :set_user_cards, only: [:index]
 
