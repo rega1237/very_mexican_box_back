@@ -19,9 +19,7 @@ class User < ActiveRecord::Base
     customer = Stripe::Customer.create(email:)
     self.stripe_id = customer.id
 
-    if self.stripe_id == nil
-      raise "Error creando referencia en stripe"
-    end
+    raise 'Error creando referencia en stripe' if stripe_id.nil?
   end
 
   def create_new_source(card_token)
