@@ -1,5 +1,5 @@
 class User < ActiveRecord::Base
-  before_validation :create_stripe_reference, on: :create
+  before_create :create_stripe_reference
 
   has_many :subscriptions
   has_many :cards
@@ -11,7 +11,6 @@ class User < ActiveRecord::Base
          :recoverable, :rememberable, :validatable
   include DeviseTokenAuth::Concerns::User
 
-  validates :stripe_id, presence: true, uniqueness: true
   validates :email, presence: true, uniqueness: true
   validates :password, presence: true, on: :create
   validates :name, presence: true
@@ -19,6 +18,8 @@ class User < ActiveRecord::Base
   def create_stripe_reference
     customer = Stripe::Customer.create(email:)
     self.stripe_id = customer.id
+
+    raise 'Error creando referencia en stripe' if stripe_id.nil?
   end
 
   def create_new_source(card_token)
