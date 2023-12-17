@@ -1,20 +1,20 @@
 class Subscription < ApplicationRecord
   attr_accessor :card_token, :change_default
 
+  before_create :create_stripe_reference
+
   belongs_to :plan
   belongs_to :user
 
-  validates :stripe_id, presence: true, uniqueness: true
   validates :plan_id, presence: true
   validates :user_id, presence: true
   validates :card_token, presence: true, on: :create
+  validates :box, presence: true, on: :create
   validates :shipping_city, presence: true, on: :create
   validates :shipping_line1, presence: true, on: :create
   validates :shipping_postal_code, presence: true, on: :create
   validates :shipping_state, presence: true, on: :create
   validates :shipping_name, presence: true, on: :create
-
-  before_validation :create_stripe_reference, on: :create
 
   def create_stripe_reference
     old_card = user.cards.where(default: true)[0]
