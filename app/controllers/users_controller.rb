@@ -6,6 +6,10 @@ class UsersController < ApplicationController
     render json: @user
   end
 
+  def user_subscriptions
+    render json: @user.subscriptions
+  end
+
   private
 
   def set_user

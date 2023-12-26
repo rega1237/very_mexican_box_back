@@ -18,6 +18,17 @@ class SubscriptionsController < ApplicationController
     end
   end
 
+  def cancel_stripe_subscription
+    if @subscription.update(active: false)
+      @subscription.cancel_stripe_subscription(params[:data][:comment]) unless @subscription.active
+      SubcriptionCustomerMailer.with(subscription: @subscription).cancel_stripe_subscription_user.deliver_later
+      SubcriptionCustomerMailer.with(subscription: @subscription).cancel_stripe_subscription_admin.deliver_later
+      render json: @subscription
+    else
+      render json: @subscription.errors, status: :unprocessable_entity
+    end
+  end
+
   def update
     if @subscription.update(subscription_params)
       @subscription.cancel_stripe_subscription(params[:data][:comment]) if @subscription.subscription_inactive?
