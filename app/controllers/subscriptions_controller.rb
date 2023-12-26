@@ -1,7 +1,7 @@
 class SubscriptionsController < ApplicationController
   before_action :set_subscription, except: %i[create]
   before_action :authenticate_user!
-  
+
   def show
     render json: @subscription
   end
@@ -20,7 +20,7 @@ class SubscriptionsController < ApplicationController
 
   def cancel_stripe_subscription
     if @subscription.update(active: false)
-      @subscription.cancel_stripe_subscription(params[:data][:comment]) if !@subscription.active
+      @subscription.cancel_stripe_subscription(params[:data][:comment]) unless @subscription.active
       SubcriptionCustomerMailer.with(subscription: @subscription).cancel_stripe_subscription_user.deliver_later
       SubcriptionCustomerMailer.with(subscription: @subscription).cancel_stripe_subscription_admin.deliver_later
       render json: @subscription
@@ -29,8 +29,6 @@ class SubscriptionsController < ApplicationController
     end
   end
 
-
-  
   def update
     if @subscription.update(subscription_params)
       @subscription.cancel_stripe_subscription(params[:data][:comment]) if @subscription.subscription_inactive?
